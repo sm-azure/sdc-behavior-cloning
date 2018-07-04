@@ -6,39 +6,17 @@ import tensorflow as tf
 EPOCHS = 3
 
 lines =[]
-with open('./driving_log.csv') as csvfile:
-	reader = csv.reader(csvfile)
-	for row in reader:
-		lines.append(row)
-
-with open('./driving_log2.csv') as csvfile:
-	reader = csv.reader(csvfile)
-	for row in reader:
-		lines.append(row)
-
-# Reverse
-with open('./driving_log3.csv') as csvfile:
-	reader = csv.reader(csvfile)
-	for row in reader:
-		lines.append(row)
-
-#Lap 2
-with open('./driving_log_lap2.csv') as csvfile:
-	reader = csv.reader(csvfile)
-	for row in reader:
-		lines.append(row)
-
-# Fault Correction
-#with open('./driving_log_faults.csv') as csvfile:
-#	reader = csv.reader(csvfile)
-#	for row in reader:
-#		lines.append(row)
-
-
 images = []
 measurements = []
 correction = 0.2
 current_path = 'IMG/' 
+
+#Load all the training data 
+def load_train_data(file_path):
+	with open(file_path) as csvfile:
+		reader = csv.reader(csvfile)
+		for row in reader:
+			lines.append(row)
 
 def img_add(imgBGR, measurement,flip= False):	
 	# Images are in BGR, convert to RGB
@@ -49,6 +27,13 @@ def img_add(imgBGR, measurement,flip= False):
 		images.append(cv2.flip(imgRGB,1))
 		measurements.append(measurement*-1.0)
 
+# Load all the training run pointers
+load_train_data('./driving_log.csv')
+load_train_data('./driving_log2.csv')
+load_train_data('./driving_log3.csv')
+load_train_data('./driving_log_lap2.csv')
+
+# Load all the images 
 for line in lines:
 	center_path = line[0]
 	left_path = line[1]
