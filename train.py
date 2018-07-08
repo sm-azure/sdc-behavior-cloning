@@ -78,7 +78,7 @@ load_train_data('./driving_log3.csv')
 load_train_data('./driving_log_lap2.csv')
 
 #Split the train and test data
-train_lines, test_lines = train_test_split(lines, test_size = 0.05)
+train_lines, test_lines = train_test_split(lines, test_size = 0.05, shuffle = True)
 
 num_train_lines = len(train_lines)
 num_test_lines = len(test_lines)
@@ -89,8 +89,8 @@ train_gen = generate_data(train_lines, batch_size = BATCH_SIZE, is_test = False)
 valid_gen = generate_data(train_lines, batch_size = BATCH_SIZE, is_test = False)
 test_gen = generate_data(test_lines, batch_size = BATCH_SIZE, is_test = True)
 
-#X_train = np.array(images)
-#y_train = np.array(measurements)
+print( 'Num steps/epoch=', (num_train_lines*4)/BATCH_SIZE)
+print( 'Num validations/epoch=', (num_train_lines*4)*0.2/BATCH_SIZE)
 
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Conv2D, MaxPooling2D, Dropout, Cropping2D
@@ -99,20 +99,14 @@ model = Sequential()
 model.add(Cropping2D(cropping=((50, 20), (0, 0)), input_shape=(160, 320, 3)))
 model.add(Lambda(lambda x: tf.image.rgb_to_grayscale(x)))
 model.add(Lambda(lambda x: (x-128)/255))
-model.add(Conv2D(24, (5, 5), strides=(2, 2),
-                 padding='valid', activation='elu'))
-model.add(Conv2D(36, (5, 5), strides=(2, 2),
-                 padding='valid', activation='elu'))
-model.add(Conv2D(48, (5, 5), strides=(2, 2),
-                 padding='valid', activation='elu'))
+model.add(Conv2D(24, (5, 5), strides=(2, 2), padding='valid', activation='elu'))
+model.add(Conv2D(36, (5, 5), strides=(2, 2), padding='valid', activation='elu'))
+model.add(Conv2D(48, (5, 5), strides=(2, 2), padding='valid', activation='elu'))
 model.add(Dropout(0.2))
 
-model.add(Conv2D(64, (3, 3), strides=(1, 1),
-                 padding='valid', activation='elu'))
-model.add(Conv2D(64, (3, 3), strides=(1, 1),
-                 padding='valid', activation='elu'))
+model.add(Conv2D(64, (3, 3), strides=(1, 1), padding='valid', activation='elu'))
+model.add(Conv2D(64, (3, 3), strides=(1, 1), padding='valid', activation='elu'))
 model.add(Flatten())
-model.add(Dropout(0.2))
 
 model.add(Dense(100, activation='elu'))
 model.add(Dropout(0.5))
@@ -122,7 +116,6 @@ model.add(Dense(10, activation='elu'))
 model.add(Dense(1))
 
 model.compile(loss='mean_squared_error', optimizer='adam')
-#model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=EPOCHS)
 model.fit_generator(generator=train_gen, steps_per_epoch=(num_train_lines*4)/BATCH_SIZE, epochs=EPOCHS,
 validation_data=valid_gen, validation_steps=(num_train_lines*4)*0.2/BATCH_SIZE)
 
